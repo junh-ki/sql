@@ -1,3 +1,5 @@
+/* Main - northwind */
+
 /* Selecting all data from a table */
 
 SELECT * FROM customers;
@@ -27,6 +29,8 @@ SELECT COUNT(DISTINCT productid) FROM order_details; -- how many distinct produc
 SELECT customerid, shippeddate - orderdate FROM orders;
 -- select the amount spent on order details (price times quantity)
 SELECT orderid, unitprice * quantity from order_details;
+
+/* Practice - pagila */
 
 -- Select all fields and all records from actor table
 SELECT * FROM actor;
