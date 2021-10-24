@@ -85,5 +85,3 @@ AdventureWorks=# \dn
 AdventureWorks=# \! clear
 AdventureWorks=# \dt sales.  <= list all the tables on sales schema (it doesn't work somehow)
 AdventureWorks=# SELECT * FROM sales.store LIMIT 1;
-
-
