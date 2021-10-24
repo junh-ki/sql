@@ -1,0 +1,89 @@
+$ psql --port=5432 --host=localhost --dbname=northwind --username=postgres
+=> Password for user postgres: test1234
+or
+$ psql -p 5432 -h localhost -d northwind -U postgres
+=> Password for user postgres: test1234
+
+$ \q   <= exit
+
+-------------------------------------------------------------------------------------------
+
+# Environment Variables (Set these variables for our connection)
+
+- PGHOST
+
+- PGPORT
+
+- PGUSER
+
+- PGPASSWORD
+
+- PGDATABASE
+
+$ export PGHOST=localhost
+$ export PGPORT=5433
+$ export PGUSER=postgres
+$ export PGDATABASE=northwind
+$ export PGPASSWORD=test1234
+$ .bash_profile
+$ psql
+$ psql -d AdventureWorks
+$ unset myvariable   <- unsetting the environmental variables
+
+
+Or you can createw a .pgpass file <= you don't need this if you use environmental variables
+
+.pgpass format: 
+hostname:port:database:username:password
+localhost:5432:northwind:postgres:test1234
+
+.pg_service.conf <= if you have multiple databases
+
+[myservice]
+host=localhost
+port=5432
+dbname=northwind
+user=postgres
+password=test1234
+
+then
+$ psql service=myservice
+or
+$ export PGSERVICE=myservice
+
+-------------------------------------------------------------------------------------------
+
+# Databases in psql
+
+northwind=# \l
+northwind=# \! clear
+northwind=# \c AdventureWorks
+You are now connected to database "AdventureWorks" as user "postgres".
+AdventureWorks=# 
+
+-------------------------------------------------------------------------------------------
+
+# Schemas in psql
+
+AdventureWorks=# \dn
+      List of schemas
+      Name      |  Owner   
+----------------+----------
+ hr             | postgres
+ humanresources | postgres
+ pe             | postgres
+ person         | postgres
+ pr             | postgres
+ production     | postgres
+ pu             | postgres
+ public         | postgres
+ purchasing     | postgres
+ sa             | postgres
+ sales          | postgres
+(11 rows)
+
+AdventureWorks=# \! clear
+AdventureWorks=# \dt sales.  <= list all the tables on sales schema (it doesn't work somehow)
+AdventureWorks=# SELECT * FROM sales.store LIMIT 1;
+
+
