@@ -104,7 +104,11 @@ SELECT c1.companyname AS CustomerName1, c2.companyname AS CustomerName2, c1.city
 	WHERE c1.customerid <> c2.customerid -- greater than or less than
 	ORDER BY c1.city;
 -- Find suppliers from the same country and order by country
-
+SELECT s1.companyname AS SupplierName1, s2.companyname AS SupplierName2, s1.country
+	FROM suppliers AS s1
+	JOIN suppliers AS s2 ON s1.country = s2.country
+	WHERE s1.supplierid <> s2.supplierid
+	ORDER BY s1.country;
 
 /* USING to Reduce Typing */
 
