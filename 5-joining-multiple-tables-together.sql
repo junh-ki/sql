@@ -111,10 +111,102 @@ SELECT s1.companyname AS SupplierName1, s2.companyname AS SupplierName2, s1.coun
 	ORDER BY s1.country;
 
 /* USING to Reduce Typing */
-
+-- ON customers.customerid=orders.customerid <- lots of typing
+-- Shortcut: USING(customerid)
+SELECT * FROM orders JOIN order_details USING (orderid);
+-- Add products to the previous join of orders and order_details
+SELECT * FROM orders 
+	JOIN order_details USING (orderid) 
+	JOIN products USING (productid);
 
 /* Even Less Typing with NATURAL */
+-- NATURAL is a shorthand for USING with a list of all columns that are the same in both tables
+SELECT * FROM orders NATURAL JOIN order_details;
+-- Add customers to the previous query using NATURAL JOIN
+-- Warning: you must order the joins correctly. The NATURAL must connect the previous table to the next table
+-- or it will do a cross join connecting every row to every other row
+SELECT * FROM customers
+	NATURAL JOIN orders
+	NATURAL JOIN order_details; -- customer links to orders (customerid), orders links to order_details (orderid)
+-- Warning: It will match all fields that have the same name
+-- Won't work joining products to order_details because of the second field unitprice that is in both tables
+-- Must use USING or a JOIN ON syntax
+SELECT COUNT(*) FROM products
+	NATURAL JOIN order_details; -- 1493
+SELECT COUNT(*) FROM products
+	JOIN order_details USING (productid); -- 2155
 
+/* Practice - AdventureWorks */
 
-/* Practice -  */
+-- Join (with inner join) together person, personphone, businessentity and phonenumber type in the persons schema.
+-- Return first name, middle name, last name, phone number and the name of the phone number type (home, office, etc.)  
+-- Order by business entity id descending.
+SELECT firstname, middlename, lastname, phonenumber, name from person.person
+	JOIN person.personphone ON person.businessentityid=personphone.businessentityid
+	JOIN person.phonenumbertype ON personphone.phonenumbertypeid=personphone.phonenumbertypeid
+	ORDER BY person.businessentityid DESC;
+-- USING
+SELECT firstname, middlename, lastname, phonenumber, name from person.person
+	JOIN person.personphone USING (businessentityid)
+	JOIN person.phonenumbertype USING (phonenumbertypeid)
+	ORDER BY person.businessentityid DESC;
 
+-- Join (Inner) productmodel, productmodelproductiondescriptionculture, productdescription and culture from the production schema.
+-- Return the productmodel name, culture name, and productdescription description ordered by the product model name.
+SELECT productmodel.name AS modelname, culture.name AS culturename, description from production.productmodel
+	JOIN production.productmodelproductdescriptionculture ON production.productmodel.productmodelid=production.productmodelproductdescriptionculture.productmodelid
+	JOIN production.culture ON production.productmodelproductdescriptionculture.cultureid=production.culture.cultureid
+	JOIN production.productdescription ON production.productmodelproductdescriptionculture.productdescriptionid=production.productdescription.productdescriptionid
+	ORDER BY production.productmodel.name;
+-- USING
+SELECT productmodel.name AS modelname, culture.name AS culturename, description from production.productmodel
+	JOIN production.productmodelproductdescriptionculture USING (productmodelid)
+	JOIN production.culture USING (cultureid)
+	JOIN production.productdescription USING (productdescriptionid)
+	ORDER BY production.productmodel.name;
+
+-- Add a join to previous example to production.product and return the product name field in addition to other information.
+SELECT product.name AS productname, productmodel.name AS modelname, culture.name AS culturename, description from production.productmodel
+	JOIN production.productmodelproductdescriptionculture ON production.productmodel.productmodelid=production.productmodelproductdescriptionculture.productmodelid
+	JOIN production.culture ON production.productmodelproductdescriptionculture.cultureid=production.culture.cultureid
+	JOIN production.productdescription ON production.productmodelproductdescriptionculture.productdescriptionid=production.productdescription.productdescriptionid
+	JOIN production.product ON production.productmodel.productmodelid=production.product.productmodelid
+	ORDER BY production.productmodel.name;
+-- USING
+SELECT productmodel.name AS modelname, culture.name AS culturename, description from production.productmodel
+	JOIN production.productmodelproductdescriptionculture USING (productmodelid)
+	JOIN production.culture USING (cultureid)
+	JOIN production.productdescription USING (productdescriptionid)
+	JOIN production.product USING (productmodelid)
+	ORDER BY production.productmodel.name;
+
+-- Join product and productreview in the schema table.
+-- Include every record from product and any reviews they have.
+-- Return the product name, review rating and comments.  
+-- Order by rating in ascending order.
+SELECT name, rating, comments from production.product
+	JOIN production.productreview ON production.product.productid=production.productreview.productid
+	ORDER BY rating ASC;
+-- USING
+SELECT name, rating, comments from production.product
+	JOIN production.productreview USING (productid)
+	ORDER BY rating ASC;
+
+-- Use a right join to combine workorder and product from production schema to bring back all products and any work orders they have.
+-- Include the product name and workorder orderqty and scrappedqty fields.
+-- Order by productid ascending.
+SELECT name, orderqty, scrapreasonid from production.workorder
+	RIGHT JOIN production.product ON production.workorder.productid=production.product.productid
+	ORDER BY production.product.productid ASC
+SELECT name, orderqty, scrapreasonid from production.workorder
+	RIGHT JOIN production.product ON production.workorder.productid=production.product.productid
+	WHERE orderqty IS NOT NULL AND scrapreasonid IS NOT NULL
+	ORDER BY production.product.productid ASC
+-- USING
+SELECT name, orderqty, scrapreasonid from production.workorder
+	RIGHT JOIN production.product USING (productid)
+	ORDER BY production.product.productid ASC
+SELECT name, orderqty, scrapreasonid from production.workorder
+	RIGHT JOIN production.product USING (productid)
+	WHERE orderqty IS NOT NULL AND scrapreasonid IS NOT NULL
+	ORDER BY production.product.productid ASC
