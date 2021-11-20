@@ -32,10 +32,69 @@ SELECT productname, SUM(order_details.unitprice * quantity)
 	ORDER BY SUM(order_details.unitprice * quantity) DESC;
 
 /* Use HAVING to Filter Groups */
-
+-- WHERE filters records before grouping
+-- HAVING filters records after grouping
+-- Find products that sold less than $2000
+SELECT productname, SUM(quantity * order_details.unitprice) AS AmountBought 
+	FROM products 
+	JOIN order_details USING (productid) 
+	GROUP BY productname 
+	HAVING SUM(quantity * order_details.unitprice) < 2000
+	ORDER BY AmountBought ASC;
+-- Find customers that have bought more than $5000 of products
+SELECT companyname, SUM(quantity * unitprice) AS AmountSpent
+	FROM customers
+	JOIN orders USING (customerid)
+	JOIN order_details USING (orderid)
+	GROUP BY companyname
+	HAVING SUM(quantity * unitprice) > 5000
+	ORDER BY AmountSpent ASC;
+SELECT companyname, SUM(quantity * unitprice) AS AmountBought
+	FROM customers
+	NATURAL JOIN orders
+	NATURAL JOIN order_details
+	GROUP BY companyname
+	HAVING SUM(quantity * unitprice) > 5000
+	ORDER BY AmountBought ASC;
+-- Find customers that have bought more than $5000 of products with order date in the first six months of the year of 1997
+SELECT companyname, SUM(quantity * unitprice) AS AmountSpent
+	FROM customers
+	NATURAL JOIN orders
+	NATURAL JOIN order_details
+	WHERE orderdate > '1997-01-01' AND orderdate < '1997-06-30'
+	GROUP BY companyname
+	HAVING SUM(quantity * unitprice) > 5000
+	ORDER BY AmountSpent ASC;
 
 /* Grouping Sets */
-
+-- GROUP BY GROUPING SETS( (field1), (field2), (field3, field4) )
+SELECT categoryname, productname, SUM(od.unitprice * quantity)
+	FROM categories
+	NATURAL JOIN products
+	NATURAL JOIN order_details AS od
+	GROUP BY GROUPING SETS ((categoryname), (categoryname, productname))
+	ORDER BY categoryname, productname;
+-- Find total sales by both customer's companyname renamed as buyer 
+-- and supplier's companyname renamed as supplier and order by buyer and supplier
+SELECT customers.companyname AS buyer, suppliers.companyname AS supplier, SUM(quantity * order_details.unitprice)
+	FROM customers
+	NATURAL JOIN orders
+	NATURAL JOIN order_details
+	JOIN products USING (productid)
+	JOIN suppliers USING (supplierid)
+	GROUP BY GROUPING SETS ((buyer), (buyer, supplier))
+	ORDER BY buyer, supplier;
+-- Find total sales grouped by customer companyname and categoryname (must link to tables),
+-- order by companyname, categoryname with NULLS FIRST
+SELECT companyname, categoryname, SUM(quantity * order_details.unitprice)
+	FROM customers
+	NATURAL JOIN orders
+	NATURAL JOIN order_details
+	JOIN products USING (productid)
+	JOIN categories USING (categoryid)
+	GROUP BY GROUPING SETS ((companyname), (companyname, categoryname))
+	ORDER BY companyname, categoryname
+	NULLS FIRST;
 
 /* Rollup */
 
