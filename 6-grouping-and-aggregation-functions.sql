@@ -97,7 +97,45 @@ SELECT companyname, categoryname, SUM(quantity * order_details.unitprice)
 	NULLS FIRST;
 
 /* Rollup */
-
+-- Rollup is shorthand for doing grouping sets
+-- Do a rollup with customer, categories and products
+SELECT c.companyname, categoryname, productname, SUM(od.unitprice * quantity)
+	FROM customers AS c
+	NATURAL JOIN orders
+	NATURAL JOIN order_details AS od
+	JOIN products USING (productid)
+	JOIN categories USING (categoryid)
+	GROUP BY ROLLUP (companyname, categoryname, productname)
+	ORDER BY companyname, categoryname, productname;
+-- Do a rollup of suppliers, products and customers
+SELECT suppliers.companyname AS supplier, customers.companyname AS customer, productname, SUM(order_details.unitprice * quantity)
+	FROM suppliers
+	JOIN products USING(supplierid)
+	JOIN order_details USING(productid)
+	JOIN orders USING(orderid)
+	JOIN customers USING(customerid)
+	GROUP BY ROLLUP (supplier, customer, productname)
+	ORDER BY supplier, customer, productname;
 
 /* Cube - Rollup On Steroids */
-
+-- Cube does all subsets
+-- CUBE(a, b, c) is same as
+-- GROUPING SETS((a,b,c), (a,b), (a,c), (b,c), (a), (b), (c), ())
+-- Do a cube of total sales by customer, categories and products
+SELECT companyname, categoryname, productname, SUM(od.unitprice * quantity)
+	FROM customers
+	NATURAL JOIN orders
+	NATURAL JOIN order_details AS od
+	JOIN products USING (productid)
+	JOIN categories USING (categoryid)
+	GROUP BY CUBE (companyname, categoryname, productname)
+	ORDER BY companyname, categoryname, productname;
+-- Do a cube of total sales by suppliers, products and customers
+SELECT suppliers.companyname AS supplier, customers.companyname AS customer, productname, SUM(order_details.unitprice * quantity)
+	FROM suppliers
+	JOIN products USING (supplierid)
+	JOIN order_details USING (productid)
+	JOIN orders USING (orderid)
+	JOIN customers USING (customerid)
+	GROUP BY CUBE (supplier, customer, productname)
+	ORDER BY supplier NULLS FIRST, customer NULLS FIRST, productname NULLS FIRST;
