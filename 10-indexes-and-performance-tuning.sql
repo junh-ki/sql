@@ -123,11 +123,38 @@ EXPLAIN ANALYZE SELECT * FROM performance_test WHERE name LIKE 'cf%';
 EXPLAIN ANALYZE SELECT * FROM performance_test WHERE location LIKE 'df%';
 -- It's recommended to order the columns as they are already ordered
 
-/* Expression indexes */
+/* Main - AdventureWorks */
 
+/* Expression indexes */
+EXPLAIN SELECT * FROM production.product WHERE name LIKE 'Flat%';
+CREATE INDEX idx_product_name ON production.product (name);
+EXPLAIN SELECT * FROM production.product WHERE name LIKE 'Flat%';
+EXPLAIN SELECT * FROM production.product WHERE UPPER(name) LIKE UPPER('Flat%');
+CREATE INDEX idx_product_upper_name ON production.product (UPPER(name));
+-- Build an index for person.person table that combines their first name with last name
+-- using string concatenation ||. Be sure to put a space between the names.
+CREATE INDEX idx_person_fullname ON person.person ((firstname || ' ' || lastname));
+EXPLAIN SELECT * FROM person.person WHERE firstname || ' ' || lastname = 'Terri Duffy';
+SELECT * FROM person.person WHERE firstname || ' ' || lastname = 'Terri Duffy';
 
 /* Types of indexes */
+-- B-Tree (Most Common): When you create an index without specifying, this is what you get
+-- Hash: If you only use equal, only handles equal operator
+-- GIN: Generalized Inverted Index, useful for data types that have multiple values in a column
+-- Gist: Generalized Inverted Search Tree, useful when you have data that overlap with the value of that column
+-- BRIN: Block Range Indexes, best used for large datasets that have some natural ordering
+-- SP-GiST: Space Partitioned GiST, useful for data that has a natural clustering to it but not balanced
+-- Syntax to create specific indexes
+-- CREATE INDEX name ON table USING type (field1, ...)
 
+/* Main - northwind */
 
 /* Speeding up Text Matching */
-
+-- Pattern matching is slow on regular indexes
+CREATE EXTENSION pg_trgm;
+CREATE INDEX trgm_idx_performance_test_location ON performance_test USING gin (location gin_trgm_ops);
+CREATE INDEX idx_performance_test_name ON performance_test (name);
+EXPLAIN ANALYZE SELECT location FROM performance_test WHERE name LIKE '%dfe%';
+EXPLAIN ANALYZE SELECT location FROM performance_test WHERE name LIKE 'dfe%';
+EXPLAIN ANALYZE SELECT location FROM performance_test WHERE location LIKE '%dfe%';
+EXPLAIN ANALYZE SELECT location FROM performance_test WHERE location LIKE 'dfe%';
